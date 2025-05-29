@@ -1,0 +1,32 @@
+Museu Virtual AR – Linha do Tempo da Arte
+Autores:
+
+Dinis Miranda (nº 40240120)
+
+Diogo Proença (nº )
+
+Conceito e Objetivos:
+Desenvolver uma experiência de realidade aumentada que apresenta obras de arte icônicas em ordem cronológica, proporcionando uma jornada interativa pela história da arte.
+
+Processo de Desenvolvimento:
+Utilizamos A-Frame e AR.js para criar uma cena AR baseada em marcador personalizado. Cada obra é representada por uma imagem e texto descritivo, exibidos ao detectar o marcador.
+
+Dificuldades e Soluções:
+
+Posicionamento dos elementos: Ajustamos manualmente as propriedades position e rotation para alinhar corretamente as imagens e textos.
+
+Criação do marcador personalizado: Utilizamos o gerador de marcadores AR.js para criar um marcador com o logotipo do museu.
+
+Referências e Influências:
+
+Documentação oficial do A-Frame
+
+Gerador de marcadores do AR.js
+
+Obras obtidas do Google Arts & Culture
+
+Imagens do Projeto:
+[Inserir capturas de tela da aplicação em funcionamento]
+
+Link para o Projeto:
+[Inserir link para a pasta no OneDrive]

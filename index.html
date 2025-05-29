@@ -1,14 +1,21 @@
+<!DOCTYPE html>
 <html>
   <head>
+    <meta charset="utf-8">
+    <title>Museu Virtual AR</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.2/aframe/build/aframe-ar.min.js"></script>
+    <style>
+      body { margin: 0; overflow: hidden; }
+    </style>
   </head>
-  <body style="margin: 0; overflow: hidden;">
+  <body>
     <a-scene embedded arjs>
       <!-- Marcador personalizado -->
-      <a-marker type="pattern" url="pasta/pattern-marker.patt">
-        <!-- Objeto 3D -->
-        <a-box position="0 0.5 0" material="color: blue;"></a-box>
+      <a-marker type="pattern" url="assets/marker.patt">
+        <!-- Obra 1: Mona Lisa -->
+        <a-image src="assets/obras/mona_lisa.jpg" position="0 0.5 0" rotation="-90 0 0" width="1" height="0.75"></a-image>
+        <a-text value="Mona Lisa\nLeonardo da Vinci, 1503" position="0 0.1 0" rotation="-90 0 0" color="#000" align="center"></a-text>
       </a-marker>
       <a-entity camera></a-entity>
     </a-scene>
