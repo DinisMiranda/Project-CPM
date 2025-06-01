@@ -1,23 +1,209 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <meta charset="utf-8">
-    <title>Museu Virtual AR</title>
+    <title>Museu Virtual 3D</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.2/aframe/build/aframe-ar.min.js"></script>
+    <script src="https://unpkg.com/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
     <style>
-      body { margin: 0; overflow: hidden; }
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            font-family: 'Arial', sans-serif;
+        }
+        .info-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            max-width: 80%;
+            text-align: center;
+            z-index: 1000;
+            display: none;
+        }
+        .controls-info {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 1000;
+        }
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            font-size: 24px;
+        }
     </style>
-  </head>
-  <body>
-    <a-scene embedded arjs>
-      <!-- Marcador personalizado -->
-      <a-marker type="pattern" url="assets/marker.patt">
-        <!-- Obra 1: Mona Lisa -->
-        <a-image src="assets/obras/mona_lisa.jpg" position="0 0.5 0" rotation="-90 0 0" width="1" height="0.75"></a-image>
-        <a-text value="Mona Lisa\nLeonardo da Vinci, 1503" position="0 0.1 0" rotation="-90 0 0" color="#000" align="center"></a-text>
-      </a-marker>
-      <a-entity camera></a-entity>
+</head>
+<body>
+    <div class="loading-screen" id="loadingScreen">Carregando o museu...</div>
+    <div class="controls-info">
+        Movimento: WASD + Mouse<br>
+        Correr: Shift<br>
+        Pular: Espaço<br>
+        Interagir: Clique
+    </div>
+    <div class="info-panel" id="infoPanel"></div>
+
+    <a-scene loading-screen="enabled: false">
+        <!-- Assets -->
+        <a-assets>
+            <!-- Texturas das paredes -->
+            <img id="wallTexture" src="https://cdn.jsdelivr.net/gh/aframevr/assets@master/common/textures/wall/wall-brick.jpg">
+            
+            <!-- Obras de arte -->
+            <img id="monaLisa" src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/800px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg">
+            <img id="starryNight" src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/800px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg">
+            <img id="guernica" src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/PicassoGuernica.jpg/800px-PicassoGuernica.jpg">
+            <img id="marilyn" src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Andy_Warhol_Marilyn_Monroe_1967.jpg/800px-Andy_Warhol_Marilyn_Monroe_1967.jpg">
+            <img id="venus" src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Venus_of_Willendorf_frontview_retouched_2.jpg/800px-Venus_of_Willendorf_frontview_retouched_2.jpg">
+            <img id="lascaux" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Lascaux2.jpg/800px-Lascaux2.jpg">
+        </a-assets>
+
+        <!-- Ambiente do museu -->
+        <a-entity id="museum">
+            <!-- Piso -->
+            <a-plane id="floor" src="#wallTexture" rotation="-90 0 0" width="30" height="30" repeat="10 10" position="0 0 0"></a-plane>
+            
+            <!-- Paredes -->
+            <a-entity id="walls">
+                <!-- Parede norte -->
+                <a-plane src="#wallTexture" position="0 2.5 -14.5" rotation="0 0 0" width="30" height="5" repeat="6 1"></a-plane>
+                <!-- Parede sul -->
+                <a-plane src="#wallTexture" position="0 2.5 14.5" rotation="0 180 0" width="30" height="5" repeat="6 1"></a-plane>
+                <!-- Parede leste -->
+                <a-plane src="#wallTexture" position="14.5 2.5 0" rotation="0 90 0" width="30" height="5" repeat="6 1"></a-plane>
+                <!-- Parede oeste -->
+                <a-plane src="#wallTexture" position="-14.5 2.5 0" rotation="0 -90 0" width="30" height="5" repeat="6 1"></a-plane>
+            </a-entity>
+            
+            <!-- Teto -->
+            <a-plane src="#wallTexture" position="0 5 0" rotation="90 0 0" width="30" height="30" repeat="10 10"></a-plane>
+            
+            <!-- Divisórias internas -->
+            <a-plane src="#wallTexture" position="0 2.5 -7" rotation="0 0 0" width="20" height="5"></a-plane>
+            <a-plane src="#wallTexture" position="7 2.5 0" rotation="0 90 0" width="20" height="5"></a-plane>
+            
+            <!-- Obras de arte nas paredes -->
+            <a-entity id="artworks">
+                <!-- Sala 1: Pré-Histórico -->
+                <a-entity class="artwork" data-period="Pré-Histórico" data-year="-25000" data-title="Vênus de Willendorf" data-description="Estatueta paleolítica que representa uma figura feminina, possivelmente um símbolo de fertilidade." position="-12 1.5 -5" rotation="0 90 0">
+                    <a-image src="#venus" width="1" height="1.5"></a-image>
+                    <a-text value="Vênus de Willendorf\nc. 25.000 AEC" position="0 -1.1 0.1" color="#000" align="center" width="2"></a-text>
+                </a-entity>
+                
+                <a-entity class="artwork" data-period="Pré-Histórico" data-year="-15000" data-title="Pinturas de Lascaux" data-description="Arte rupestre paleolítica encontrada na França, mostrando animais como bisões, cavalos e veados." position="-12 1.5 -9" rotation="0 90 0">
+                    <a-image src="#lascaux" width="2" height="1.2"></a-image>
+                    <a-text value="Pinturas de Lascaux\nc. 15.000-13.000 AEC" position="0 -0.9 0.1" color="#000" align="center" width="3"></a-text>
+                </a-entity>
+                
+                <!-- Sala 2: Renascimento -->
+                <a-entity class="artwork" data-period="Renascimento" data-year="1503" data-title="Mona Lisa" data-description="Retrato icônico conhecido pelo sorriso enigmático e pela técnica do sfumato de Leonardo." position="-5 1.5 12" rotation="0 180 0">
+                    <a-image src="#monaLisa" width="1.2" height="1.8"></a-image>
+                    <a-text value="Mona Lisa\nLeonardo da Vinci, 1503-1519" position="0 -1.3 0.1" color="#000" align="center" width="2.5"></a-text>
+                </a-entity>
+                
+                <!-- Sala 3: Pós-Impressionismo -->
+                <a-entity class="artwork" data-period="Pós-Impressionismo" data-year="1889" data-title="A Noite Estrelada" data-description="Uma das obras mais conhecidas de Van Gogh, pintada durante sua estadia no asilo de Saint-Rémy." position="5 1.5 12" rotation="0 180 0">
+                    <a-image src="#starryNight" width="2" height="1.6"></a-image>
+                    <a-text value="A Noite Estrelada\nVincent van Gogh, 1889" position="0 -1.1 0.1" color="#000" align="center" width="3"></a-text>
+                </a-entity>
+                
+                <!-- Sala 4: Modernismo -->
+                <a-entity class="artwork" data-period="Cubismo" data-year="1937" data-title="Guernica" data-description="Representação poderosa do bombardeio de Guernica durante a Guerra Civil Espanhola." position="12 1.5 5" rotation="0 -90 0">
+                    <a-image src="#guernica" width="3" height="1.4"></a-image>
+                    <a-text value="Guernica\nPablo Picasso, 1937" position="0 -1 0.1" color="#000" align="center" width="4"></a-text>
+                </a-entity>
+                
+                <a-entity class="artwork" data-period="Pop Art" data-year="1962" data-title="Marilyn Diptych" data-description="Ícone da Pop Art que celebra e critica a cultura de celebridades e consumo." position="12 1.5 -5" rotation="0 -90 0">
+                    <a-image src="#marilyn" width="1.5" height="1.5"></a-image>
+                    <a-text value="Marilyn Diptych\nAndy Warhol, 1962" position="0 -1.1 0.1" color="#000" align="center" width="2.5"></a-text>
+                </a-entity>
+            </a-entity>
+            
+            <!-- Iluminação -->
+            <a-light type="ambient" color="#445"></a-light>
+            <a-light type="directional" color="#fff" intensity="0.5" position="-1 2 1"></a-light>
+            <a-light type="point" intensity="1" position="0 3 -7"></a-light>
+            <a-light type="point" intensity="1" position="0 3 7"></a-light>
+            <a-light type="point" intensity="1" position="-7 3 0"></a-light>
+            <a-light type="point" intensity="1" position="7 3 0"></a-light>
+            
+            <!-- Placas de identificação das salas -->
+            <a-text value="PRÉ-HISTÓRIA" position="-10 3 -2" rotation="0 90 0" color="#000" align="center" width="3"></a-text>
+            <a-text value="RENASCIMENTO" position="-2 3 10" rotation="0 180 0" color="#000" align="center" width="3"></a-text>
+            <a-text value="MODERNISMO" position="10 3 2" rotation="0 -90 0" color="#000" align="center" width="3"></a-text>
+            <a-text value="PÓS-IMPRESSIONISMO" position="2 3 10" rotation="0 180 0" color="#000" align="center" width="5"></a-text>
+        </a-entity>
+
+        <!-- Player -->
+        <a-entity id="player" movement-controls="speed: 0.2" position="0 1.6 0">
+            <a-entity camera look-controls pointer-lock="enabled: true"></a-entity>
+            <a-entity cursor="fuse: true; fuseTimeout: 500"
+                     position="0 0 -1"
+                     geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03"
+                     material="color: #3184ff; shader: flat">
+            </a-entity>
+        </a-entity>
     </a-scene>
-  </body>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const infoPanel = document.getElementById('infoPanel');
+            const loadingScreen = document.getElementById('loadingScreen');
+            const artworks = document.querySelectorAll('.artwork');
+            
+            // Esconde a tela de carregamento quando tudo estiver pronto
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                }, 1000);
+            });
+            
+            // Adiciona interação com as obras de arte
+            artworks.forEach(artwork => {
+                artwork.addEventListener('click', () => {
+                    const title = artwork.getAttribute('data-title');
+                    const period = artwork.getAttribute('data-period');
+                    const year = artwork.getAttribute('data-year');
+                    const description = artwork.getAttribute('data-description');
+                    
+                    infoPanel.innerHTML = `
+                        <strong>${title}</strong><br>
+                        <em>${period} (${year>0 ? year+' EC' : (-year)+' AEC'})</em><br><br>
+                        ${description}
+                    `;
+                    
+                    infoPanel.style.display = 'block';
+                    
+                    // Esconde o painel após 10 segundos
+                    setTimeout(() => {
+                        infoPanel.style.display = 'none';
+                    }, 10000);
+                });
+            });
+            
+            // Fecha o painel ao clicar nele
+            infoPanel.addEventListener('click', () => {
+                infoPanel.style.display = 'none';
+            });
+        });
+    </script>
+</body>
 </html>
